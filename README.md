@@ -1,371 +1,173 @@
 # Youth Compass
 
-청년들을 위한 AI 기반 금융 및 주택 정책 상담 챗봇 서비스
+청년을 위한 AI 기반 금융 및 주택 정책 상담 챗봇 서비스입니다.
 
-## 프로젝트 의의
+Youth Compass는 청년들이 복잡한 정책 문서를 직접 탐색하지 않아도, 자연어 대화로 본인 조건에 맞는 정책 정보를 확인할 수 있도록 설계했습니다. 
+내부 정책 PDF 문서 기반 RAG와 최신 웹 검색을 함께 활용해 답변의 정확성과 최신성을 보완합니다.
 
-Youth Compass는 청년들이 복잡한 금융 및 주택 정책 정보를 쉽게 이해하고 접근할 수 있도록 돕는 AI 상담 챗봇입니다.
+## 핵심 기술 기여
 
-### 핵심 가치
-
-- **접근성**: 어려운 정책 문서를 대화형 인터페이스로 쉽게 이해
-- **개인화**: 사용자 프로필(나이, 소득, 자산 등)을 기반으로 맞춤형 정책 추천
-- **정확성**: RAG(Retrieval-Augmented Generation) 기술로 실제 정책 문서 기반 답변 제공
-- **최신성**: 웹 검색을 통한 실시간 정책 정보 제공
-
+- **LangGraph 기반 Self-RAG 워크플로우 설계**
+- **Tavily Web Search 조건부 라우팅 구현**
+- **FastAPI + Spring WebFlux 기반 스트리밍 파이프라인 구축**
+- **LangSmith 기반 LLMOps 추적 체계 구축**
+- **ChromaDB 메타데이터 기반 검색 정확도 개선**
 
 ## 팀 프로젝트 및 개인 기여
 
 Youth Compass는 총 5명의 팀원이 함께 진행한 팀 프로젝트입니다.
 
-**본인 담당 역할**: AI 융합 백엔드 엔지니어  
-**기여 범위**: AI 서비스 인프라 및 RAG 파이프라인 전반 주도
+- **담당 역할**: AI 융합 백엔드 엔지니어
+- **기여 범위**: AI 서비스 인프라, RAG 파이프라인, LLM 워크플로우, 스트리밍 응답 처리
 
-### 핵심 성과 요약
+### 주요 기여
 
-- **LangGraph 기반 Self-RAG 워크플로우 아키텍처 수립**: 내부 PDF 문서 검색, 관련성 체크, 조건부 라우팅 기반 Tavily 웹 검색 연동, 대화 히스토리 관리를 포함하는 고도화된 AI 파이프라인을 구축했습니다.
-- **사용자 경험 개선을 위한 스트리밍 인터페이스 최적화**: 토큰 생성 단위로 클라이언트에 실시간 데이터를 전송하는 스트리밍 채팅 기능을 완성하여 첫 응답 지연(TTFB)을 개선했습니다.
-- **LangSmith 인프라 도입을 통한 LLMOps 체계 확보**: 런타임 단계에서 토큰 사용량, LangGraph 노드 전환 병목, 예외 상황을 모니터링할 수 있는 추적(Tracing) 파이프라인을 구성했습니다.
+- Jupyter Notebook 기반 실험 코드를 FastAPI 기반 독립 AI 서비스로 구조화했습니다.
+- LangGraph로 문서 검색, 관련성 평가, 웹 검색 라우팅, 답변 생성을 연결한 Self-RAG 워크플로우를 구현했습니다.
+- 내부 문서만으로 답변이 부족할 경우 Tavily Web Search로 최신 정보를 보완하도록 조건부 분기를 구성했습니다.
+- FastAPI AI 서버와 Spring WebFlux 백엔드를 연결해 토큰 단위 스트리밍 응답 파이프라인을 구축했습니다.
+- LangSmith를 연동해 토큰 사용량, 노드 전환 흐름, 예외 발생 지점을 추적할 수 있도록 했습니다.
+- 정책 PDF의 파일 경로와 폴더 구조에서 정책명, 대도메인, 문서 유형 메타데이터를 추출해 ChromaDB 검색 컨텍스트에 반영했습니다.
 
-### 상세 기술 기여
+## 아키텍처
 
-#### 1. LangGraph 기반 복합 LLM 워크플로우 설계 및 구축
+```mermaid
+flowchart LR
+    User[사용자] --> Frontend[React + TypeScript]
+    Frontend --> Backend[Spring Boot + WebFlux]
+    Backend --> AI[FastAPI AI Service]
+    AI --> Graph[LangGraph Self-RAG]
+    Graph --> Chroma[ChromaDB Vector Store]
+    Graph --> Tavily[Tavily Web Search]
+    Graph --> LLM[Upstage Solar LLM]
+    Graph --> LangSmith[LangSmith Tracing]
+    Backend --> DB[(PostgreSQL)]
+```
 
-- Jupyter Notebook 기반의 실험 코드를 구조화된 패키지로 리팩토링하여 독립적인 AI 서비스 컴포넌트로 정리했습니다.
-- 사용자 질문 인입 후 내부 ChromaDB에 적재된 청년 정책 PDF 문서를 1차 검색하고, Evaluator Node에서 문서의 유효성 및 관련성을 판단하는 Self-RAG 파이프라인을 구현했습니다.
-- 내부 문서만으로 답변이 부족하거나 관련성이 낮다고 판단되는 경우 Tavily Web Search API Node로 라우팅하여 최신 웹 정보를 보완하는 조건부 라우팅 워크플로우를 구축했습니다.
-- Upstage Solar LLM 및 Embeddings 모델을 활용하고, Docker Compose 인프라에 ChromaDB 벡터 스토어를 통합했습니다.
+### AI 워크플로우
 
-#### 2. 데이터 전처리 표준화
+```mermaid
+flowchart TD
+    Q[사용자 질문] --> R[ChromaDB 정책 문서 검색]
+    R --> E[LLM 기반 관련성 평가]
+    E -->|관련성 높음| A[정책 문서 기반 답변 생성]
+    E -->|관련성 낮음| W[Tavily 웹 검색]
+    W --> A
+    A --> S[토큰 단위 스트리밍 응답]
+```
 
-- 무분별한 텍스트 청킹으로 인한 검색 품질 저하를 줄이기 위해 파일 경로와 폴더 구조를 파싱하는 `extract_metadata()` 기능을 구현했습니다.
-- 정책 PDF 로드 시 정책명, 대도메인(취업, 주거, 금융), 문서 유형(보도자료, 공고문, FAQ) 등의 메타데이터를 자동 추출해 임베딩 텍스트 청크와 함께 벡터 스토어에 바인딩했습니다.
-- 문서 구조 정보를 검색 컨텍스트에 함께 반영하여 RAG 응답의 맥락성과 검색 정확도를 높였습니다.
+## 트러블슈팅
 
-#### 3. LLMOps 및 실시간 모니터링 체계 구축
+### 문제: RAG 응답의 첫 토큰 지연
 
-- 복잡한 LangGraph 노드 간 상태 전이와 LLM 호출 비용을 추적하기 위해 LangSmith 연동 아키텍처를 구성했습니다.
-- AI 워크플로우 실행 과정에서 토큰 사용량, 노드별 처리 흐름, 예외 발생 지점을 확인할 수 있도록 관측 가능성을 확보했습니다.
+초기 구조에서는 ChromaDB 문서 검색, Tavily 웹 검색, LLM 최종 추론이 순차적으로 처리되어 전체 답변 생성 시간이 길어졌습니다. 특히 사용자는 첫 문장이 표시되기 전까지 대기해야 했기 때문에 실제 지연보다 체감 지연이 더 크게 느껴졌습니다.
 
-### 기술적 트러블슈팅 및 성능 최적화
+### 해결: 스트리밍 응답 파이프라인 구축
 
-#### 문제: 긴 컨텍스트 생성으로 인한 첫 번째 토큰 지연
+- FastAPI AI 서버에서 LLM 토큰을 생성 즉시 스트리밍하도록 개선했습니다.
+- Spring WebFlux 기반 백엔드에서 AI 서버의 스트림을 논블로킹 방식으로 받아 클라이언트에 전달했습니다.
+- 전체 답변 생성 시간은 RAG와 LLM 추론 과정 때문에 다소 소요되지만, 스트리밍 방식을 적용해 사용자가 체감하는 첫 응답 속도를 약 **4초에서 1초 수준**으로 줄였습니다.
 
-초기 RAG 아키텍처에서는 내부 ChromaDB 문서 검색, 외부 Tavily 웹 검색, Solar LLM 최종 추론 단계가 동기식으로 처리되어 사용자가 첫 답변 문장을 보기까지 수 초 이상의 지연이 발생했습니다.
+## 기술 스택
 
-#### 해결: 백엔드 스트리밍 파이프라인 및 청크 핸들러 구현
+### AI Service
 
-- LLM 응답 스트리밍 체계를 도입하여 토큰이 생성되는 즉시 클라이언트로 점진적으로 전달되도록 개선했습니다.
-- FastAPI 기반 AI 추론 서버에서 생성 토큰을 실시간으로 스트리밍하고, Spring Boot 백엔드에서는 대용량 청크 버퍼를 논블로킹 방식으로 수용하도록 구조를 개선했습니다.
-- 중간 버퍼링을 최소화하고 사용자 화면에 토큰을 실시간으로 전달하여 첫 토큰 수신 시간(TTFB)을 밀리초 단위로 단축했습니다.
+- **LangGraph**: Self-RAG 워크플로우 구성
+- **LangChain**: LLM 체인 및 프롬프트 관리
+- **Upstage Solar LLM / Embeddings**: 한국어 정책 상담 답변 및 문서 임베딩
+- **ChromaDB**: 정책 PDF 벡터 검색
+- **Tavily**: 최신 웹 검색
+- **LangSmith**: LLMOps 추적 및 모니터링
+- **FastAPI**: AI 추론 API 및 스트리밍 응답
 
+### Backend
+
+- **Spring Boot 3.5**
+- **Spring WebFlux**
+- **PostgreSQL**
+
+### Frontend
+
+- **React 18**
+- **TypeScript**
+- **Vite**
+- **Shadcn/ui**
+- **TanStack Query**
+- **Supabase Auth**
+
+### Infra
+
+- **Docker Compose**
+- **PostgreSQL**
+- **ChromaDB**
 
 ## 프로젝트 구조
 
-```
+```text
 youth-compass/
 ├── frontend/              # React + TypeScript 프론트엔드
-│   ├── src/
-│   │   ├── components/   # UI 컴포넌트 (Chat, Profile 등)
-│   │   ├── pages/        # 페이지 컴포넌트
-│   │   ├── hooks/        # React 커스텀 훅
-│   │   └── lib/          # 유틸리티 함수
-│   ├── Dockerfile
-│   └── package.json
-│
-├── backend/              # Spring Boot 백엔드
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/youthcompass/
-│   │       │   ├── controller/  # REST API 컨트롤러
-│   │       │   ├── service/     # 비즈니스 로직
-│   │       │   ├── entity/      # JPA 엔티티
-│   │       │   └── repository/  # 데이터베이스 레포지토리
-│   │       └── resources/
-│   ├── Dockerfile
-│   └── build.gradle
-│
-├── ai-service/           # FastAPI AI 서비스
-│   ├── app/
-│   │   ├── graph_service.py    # LangGraph 워크플로우
-│   │   ├── rag_service.py      # RAG 문서 검색
-│   │   ├── langchain_service.py # LangChain 통합
-│   │   └── config.py           # 설정
-│   ├── data/
-│   │   └── documents/          # 정책 문서 (PDF)
-│   ├── Dockerfile
-│   ├── main.py
-│   └── requirements.txt
-│
-└── docker-compose.yml    # 전체 서비스 오케스트레이션
+├── backend/               # Spring Boot 백엔드
+├── ai-service/            # FastAPI AI 서비스, LangGraph RAG 파이프라인
+├── infra/                 # 인프라 설정
+├── docs/                  # 프로젝트 문서
+└── docker-compose.yml
 ```
 
-## AI 워크플로우
+## 실행 방법
 
-Youth Compass는 **LangGraph**를 사용한 정교한 AI 워크플로우를 구현합니다.
-
-### 워크플로우 단계
-
-```
-사용자 질문
-    ↓
-1. PDF 문서 검색 (ChromaDB)
-    ↓
-2. 관련성 체크 (LLM 기반)
-    ↓
-3-A. 관련성 있음 → 답변 생성
-    ↓
-3-B. 관련성 없음 → 웹 검색 (Tavily) → 답변 생성
-    ↓
-스트리밍 응답
-```
-
-### 주요 기술 스택
-
-#### AI 서비스
-- **LangGraph**: 복잡한 AI 워크플로우 구성
-- **LangChain**: LLM 체인 및 프롬프트 관리
-- **Upstage Solar LLM**: 한국어 최적화 언어 모델
-- **ChromaDB**: 벡터 데이터베이스 (PDF 문서 임베딩 저장)
-- **Tavily**: 웹 검색 API
-- **LangSmith**: AI 추적 및 모니터링 (선택사항)
-
-#### 백엔드
-- **Spring Boot 3.5**: REST API 서버
-- **PostgreSQL**: 사용자 및 대화 데이터 저장
-- **WebFlux**: AI 스트리밍 응답 처리
-
-#### 프론트엔드
-- **React 18**: UI 라이브러리
-- **TypeScript**: 타입 안정성
-- **Vite**: 빌드 도구
-- **Shadcn/ui**: UI 컴포넌트 라이브러리
-- **TanStack Query**: 서버 상태 관리
-- **Supabase**: 사용자 인증
-- **Lovable**: AI 기반 웹 개발 플랫폼을 활용하여 프론트엔드 UI 구축
-
-### AI 워크플로우 상세 설명
-
-#### 1. 문서 검색 단계 (Retrieve)
-```python
-# ChromaDB에서 사용자 질문과 유사한 문서 검색
-retriever = rag_service.get_retriever()
-retrieved_docs = await retriever.ainvoke(question)
-context = rag_service.format_docs(retrieved_docs)
-```
-
-#### 2. 관련성 체크 (Relevance Check)
-```python
-# LLM을 사용하여 검색된 문서가 질문과 관련있는지 판단
-relevance_prompt = "문서가 질문에 답변하는 데 유용한가?"
-response = await llm.ainvoke(relevance_prompt)
-relevance = "yes" if "YES" in response else "no"
-```
-
-#### 3. 조건부 분기
-- **관련성 있음**: 검색된 문서를 컨텍스트로 답변 생성
-- **관련성 없음**: Tavily 웹 검색으로 최신 정보 수집 후 답변 생성
-
-#### 4. 답변 생성 (LLM Answer)
-```python
-# 사용자 프로필 + 컨텍스트 + 대화 히스토리를 결합하여 맞춤형 답변 생성
-response = await youth_policy_chain.ainvoke({
-    "question": question,
-    "context": context,
-    "chat_history": chat_history,
-    "user_profile": user_profile_formatted
-})
-```
-
-#### 5. 스트리밍 응답
-- Server-Sent Events (SSE)를 통한 실시간 답변 전송
-- 답변 생성 중 사용자에게 즉시 응답 표시
-- 체감 속도 대폭 개선
-
-### 사용자 프로필 기반 맞춤형 추천
-
-AI는 다음 사용자 정보를 활용하여 정책을 추천합니다:
-- 이름 (친근한 호칭)
-- 나이 (청년 정책 연령 요건 확인)
-- 거주지 (지방자치단체 정책 안내)
-- 연봉 (소득 조건 확인)
-- 자산 (자산 요건 확인)
-- 참고사항 (기타 특이사항)
-
-## 시작하기
-
-### 사전 요구사항
-
-- Docker 및 Docker Compose
-- Git
-
-### 환경 변수 설정
-
-1. `.env.example` 파일을 복사하여 `.env` 파일 생성:
+### 1. 환경 변수 설정
 
 ```bash
 cp .env.example .env
 ```
 
-2. `.env` 파일을 편집하여 필수 API 키 입력:
+필수 API 키를 `.env`에 입력합니다.
 
 ```bash
-# 필수 API 키
 UPSTAGE_API_KEY=your_upstage_api_key_here
 TAVILY_API_KEY=your_tavily_api_key_here
+```
 
-# 선택사항 (LangSmith 추적)
+LangSmith 추적을 사용할 경우 다음 값을 추가합니다.
+
+```bash
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=your_langsmith_api_key_here
 LANGCHAIN_PROJECT=youth-compass
-
-# 선택사항 (Supabase 인증)
-VITE_SUPABASE_URL=your_supabase_url_here
-VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_key_here
 ```
 
-#### API 키 발급 방법
-
-- **Upstage API Key**: [Upstage Console](https://console.upstage.ai/)에서 발급
-- **Tavily API Key**: [Tavily](https://tavily.com/)에서 발급
-- **LangSmith API Key** (선택): [LangSmith](https://smith.langchain.com/)에서 발급
-- **Supabase** (선택): [Supabase](https://supabase.com/)에서 프로젝트 생성
-
-### Docker로 실행하기
-
-1. 저장소 클론:
-
-```bash
-git clone https://github.com/shawnchoi8/youth-compass.git
-cd youth-compass
-```
-
-2. 환경 변수 설정 (위 섹션 참고)
-
-3. Docker Compose로 전체 서비스 실행:
+### 2. Docker Compose 실행
 
 ```bash
 docker-compose up --build
 ```
 
-4. 서비스 접속:
+### 3. 서비스 접속
 
-- **프론트엔드**: http://localhost:3000
-- **백엔드 API**: http://localhost:8080
-- **AI 서비스**: http://localhost:8000
-- **PostgreSQL**: localhost:5432
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **AI Service**: http://localhost:8000
 - **ChromaDB**: http://localhost:8001
-
-### 서비스 종료
-
-```bash
-docker-compose down
-```
-
-### 데이터 초기화
-
-모든 데이터(데이터베이스, 벡터 저장소)를 삭제하고 초기화:
-
-```bash
-docker-compose down -v
-```
-
-## 문서 업로드
-
-AI 서비스는 `ai-service/data/documents/` 디렉토리의 PDF 문서를 자동으로 로드합니다.
-
-### 새 문서 추가 방법
-
-1. PDF 파일을 `ai-service/data/documents/` 디렉토리에 추가
-2. 문서 재로드 API 호출:
-
-```bash
-curl -X POST http://localhost:8000/reload-documents
-```
-
-또는 전체 재로딩:
-
-```bash
-curl -X POST http://localhost:8000/reload-documents?force=true
-```
-
-## 개발 환경 설정
-
-### 로컬 개발 (Docker 없이)
-
-각 서비스를 개별적으로 실행할 수 있습니다:
-
-#### 프론트엔드
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-#### 백엔드
-
-```bash
-cd backend
-./gradlew bootRun
-```
-
-#### AI 서비스
-
-```bash
-cd ai-service
-pip install -r requirements.txt
-python main.py
-```
-
-## 기술 문서
-
-프로젝트 루트에 추가 문서가 있습니다:
-
-- `AI_SERVICE_SETUP.md`: AI 서비스 상세 설정 가이드
-- `CHROMADB_MIGRATION.md`: ChromaDB 마이그레이션 가이드
-- `DOCKER_SETUP.md`: Docker 설정 상세 가이드
-
-## 모니터링 및 디버깅
-
-### LangSmith 추적
-
-LangSmith를 활성화하면 AI 워크플로우의 각 단계를 시각화하고 추적할 수 있습니다:
-
-1. `.env` 파일에서 LangSmith 설정:
-```bash
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=your_api_key
-LANGCHAIN_PROJECT=youth-compass
-```
-
-2. [LangSmith 대시보드](https://smith.langchain.com/)에서 실시간 추적 확인
-
-### 헬스 체크
-
-각 서비스의 상태 확인:
-
-```bash
-# AI 서비스
-curl http://localhost:8000/health
-
-# 백엔드
-curl http://localhost:8080/actuator/health
-```
 
 ## 주요 기능
 
-1. **대화형 챗봇**: 자연스러운 한국어 대화로 정책 상담
-2. **맞춤형 추천**: 사용자 프로필 기반 정책 필터링
-3. **실시간 스트리밍**: 빠른 응답 속도
-4. **정보 출처 표시**: PDF 문서 vs 웹 검색 출처 구분
-5. **대화 히스토리**: 이전 대화 맥락을 기억하는 멀티턴 대화
-6. **사용자 인증**: Supabase 기반 로그인/회원가입
-7. **프로필 관리**: 사용자 정보 저장 및 수정
+- 자연어 기반 청년 금융 및 주택 정책 상담
+- 사용자 프로필 기반 맞춤형 정책 추천
+- 내부 정책 PDF 기반 RAG 답변
+- Tavily 웹 검색을 통한 최신 정보 보완
+- 토큰 단위 실시간 스트리밍 응답
+- PDF 문서 출처와 웹 검색 출처 구분
+- Supabase 기반 사용자 인증
+
+## 관련 문서
+
+- [AI_SERVICE_SETUP.md](AI_SERVICE_SETUP.md): AI 서비스 설정 가이드
+- [CHROMADB_MIGRATION.md](CHROMADB_MIGRATION.md): ChromaDB 마이그레이션 가이드
+- [DOCKER_SETUP.md](DOCKER_SETUP.md): Docker 설정 상세 가이드
 
 ## Contributors
 
-이 프로젝트는 총 5명의 팀원이 함께 개발했습니다:
+이 프로젝트는 총 5명의 팀원이 함께 개발했습니다.
 
 - **Shawn Choi** ([@shawnchoi8](https://github.com/shawnchoi8))
 - **WonJun** ([@WONJUN-KR](https://github.com/WONJUN-KR))
@@ -376,7 +178,3 @@ curl http://localhost:8080/actuator/health
 ## 라이선스
 
 이 프로젝트는 교육 목적으로 개발되었습니다.
-
-## 문의
-
-문제가 발생하거나 제안사항이 있으시면 [GitHub Issues](https://github.com/shawnchoi8/youth-compass/issues)에 등록해주세요.
