@@ -31,5 +31,7 @@ ai-service/.venv/
 ai-service/data/documents/*
 !ai-service/data/documents/policy_mapping.json
 
+# infra
+infra/
 # etc
 echo "*.zip" >> .gitignore
