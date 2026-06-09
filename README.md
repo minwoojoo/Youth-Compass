@@ -5,6 +5,8 @@
 Youth Compass는 청년들이 복잡한 정책 문서를 직접 탐색하지 않아도, 자연어 대화로 본인 조건에 맞는 정책 정보를 확인할 수 있도록 설계했습니다. 
 내부 정책 PDF 문서 기반 RAG와 최신 웹 검색을 함께 활용해 답변의 정확성과 최신성을 보완합니다.
 
+<br>
+
 ## 핵심 기술 기여
 
 - **LangGraph 기반 Self-RAG 워크플로우 설계**
@@ -12,6 +14,8 @@ Youth Compass는 청년들이 복잡한 정책 문서를 직접 탐색하지 않
 - **FastAPI + Spring WebFlux 기반 스트리밍 파이프라인 구축**
 - **LangSmith 기반 LLMOps 추적 체계 구축**
 - **ChromaDB 메타데이터 기반 검색 정확도 개선**
+
+<br>
 
 ## 팀 프로젝트 및 개인 기여
 
@@ -28,6 +32,26 @@ Youth Compass는 총 5명의 팀원이 함께 진행한 팀 프로젝트입니�
 - FastAPI AI 서버와 Spring WebFlux 백엔드를 연결해 토큰 단위 스트리밍 응답 파이프라인을 구축했습니다.
 - LangSmith를 연동해 토큰 사용량, 노드 전환 흐름, 예외 발생 지점을 추적할 수 있도록 했습니다.
 - 정책 PDF의 파일 경로와 폴더 구조에서 정책명, 대도메인, 문서 유형 메타데이터를 추출해 ChromaDB 검색 컨텍스트에 반영했습니다.
+
+<br>
+
+## 시연 영상
+
+### 비로그인 상태 답변 생성
+
+![비로그인 상태 답변 생성](docs/gif-file/비로그인답변생성.gif)
+
+비로그인 상태에서도 사용자는 자연어로 청년 정책을 질문할 수 있으며, 챗봇은 RAG 검색과 웹 검색 결과를 바탕으로 정책 정보를 스트리밍 방식으로 생성합니다.
+
+<br>
+
+### 로그인 상태 답변 생성
+
+![로그인 상태 답변 생성](docs/gif-file/로그인답변생성.gif)
+
+로그인 상태에서는 사용자가 나이, 지역, 관심 분야 등 내 정보를 프로필에 저장할 수 있습니다. 또한 **내 정보 기반 답변 생성**을 활성화하면 저장된 프로필 정보를 함께 활용하여 사용자 조건에 더 적합한 정책 내용을 답변받을 수 있습니다.
+
+<br>
 
 ## 아키텍처
 
@@ -56,6 +80,8 @@ flowchart TD
     A --> S[토큰 단위 스트리밍 응답]
 ```
 
+<br>
+
 ## 트러블슈팅
 
 ### 문제: RAG 응답의 첫 토큰 지연
@@ -67,6 +93,16 @@ flowchart TD
 - FastAPI AI 서버에서 LLM 토큰을 생성 즉시 스트리밍하도록 개선했습니다.
 - Spring WebFlux 기반 백엔드에서 AI 서버의 스트림을 논블로킹 방식으로 받아 클라이언트에 전달했습니다.
 - 전체 답변 생성 시간은 RAG와 LLM 추론 과정 때문에 다소 소요되지만, 스트리밍 방식을 적용해 사용자가 체감하는 첫 응답 속도를 약 **4초에서 1초 수준**으로 줄였습니다.
+
+### LangSmith 분석 결과
+
+![LangSmith 분석표](docs/image/랭스미스분석표.png)
+
+LangSmith 기능을 통해 챗봇의 실행 로그와 성능 지표를 확인한 결과, **Error Rate가 0%**를 기록하여 안정적으로 응답이 처리되고 있음을 데이터로 확인할 수 있었습니다.
+
+전체 답변 생성 시간인 **Latency**는 RAG 검색, 관련성 평가, 웹 검색 분기, LLM 답변 생성 과정 때문에 다소 소요됩니다. 하지만 본 프로젝트는 스트리밍 방식을 채택했기 때문에 사용자가 체감하는 첫 응답 속도인 **First Token 시간이 약 1초 수준**으로 측정되었습니다. 이를 통해 사용자가 화면이 멈춘 것처럼 느끼지 않고 **즉각적인 피드백**을 받을 수 있도록 구현되어 있음을 확인할 수 있었습니다.
+
+<br>
 
 ## 기술 스택
 
@@ -101,6 +137,8 @@ flowchart TD
 - **PostgreSQL**
 - **ChromaDB**
 
+<br>
+
 ## 프로젝트 구조
 
 ```text
@@ -112,6 +150,8 @@ youth-compass/
 ├── docs/                  # 프로젝트 문서
 └── docker-compose.yml
 ```
+
+<br>
 
 ## 실행 방법
 
@@ -149,6 +189,8 @@ docker-compose up --build
 - **AI Service**: http://localhost:8000
 - **ChromaDB**: http://localhost:8001
 
+<br>
+
 ## 주요 기능
 
 - 자연어 기반 청년 금융 및 주택 정책 상담
@@ -159,11 +201,15 @@ docker-compose up --build
 - PDF 문서 출처와 웹 검색 출처 구분
 - Supabase 기반 사용자 인증
 
+<br>
+
 ## 관련 문서
 
 - [AI_SERVICE_SETUP.md](AI_SERVICE_SETUP.md): AI 서비스 설정 가이드
 - [CHROMADB_MIGRATION.md](CHROMADB_MIGRATION.md): ChromaDB 마이그레이션 가이드
 - [DOCKER_SETUP.md](DOCKER_SETUP.md): Docker 설정 상세 가이드
+
+<br>
 
 ## Contributors
 
@@ -174,6 +220,8 @@ docker-compose up --build
 - **minwoojoo** ([@minwoojoo](https://github.com/minwoojoo))
 - **meaningGitt** ([@meaningGitt](https://github.com/meaningGitt))
 - **PioKwon** ([@PioKwon](https://github.com/PioKwon))
+
+<br>
 
 ## 라이선스
 
